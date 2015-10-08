@@ -9,6 +9,8 @@ import ckan.model.domain_object as domain_object
 from ckan.lib.dictization import model_dictize
 
 from ckanext.issues.model.report import define_report_tables
+from ckanext.issues.model.notification import (define_notification_table,
+                                                                          define_notification_token_table)
 
 from datetime import datetime
 import logging
@@ -24,6 +26,8 @@ issue_table = None
 issue_category_table = None
 issue_comment_table = None
 issue_report_table = None
+issue_notification_table = None
+issue_notification_token_table = None
 issue_comment_report_table = None
 
 
@@ -34,10 +38,21 @@ def setup():
     Create issue and issue_category tables in the database.
     Prepopulate issue_category table with default categories.
     """
+    global issue_notification_table
+    global issue_notification_token_table
+
     if issue_table is None:
         define_issue_tables()
         report_tables = define_report_tables([Issue, IssueComment])
         log.debug('Issue tables defined in memory')
+
+    if issue_notification_table is None:
+        issue_notification_table = define_notification_table()
+        issue_notification_table.create(checkfirst=True)
+
+    if issue_notification_token_table is None:
+        issue_notification_token_table = define_notification_token_table()
+        issue_notification_token_table.create(checkfirst=True)
 
     if not model.package_table.exists():
         # during tests?

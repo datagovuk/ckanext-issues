@@ -1,0 +1,77 @@
+{% extends "issues/base.html" %}
+
+{% block subtitle %}{{ _("Manage notifications") }}{% endblock %}
+
+{% block maintag %}<div class="row" role="main">{% endblock %}
+
+{% block breadcrumb_content %}
+  <li><a href="/data/search">Datasets</a></li>
+  <li class="active">Issue Notification Settings</li>
+{% endblock %}
+
+{% block primary_content %}
+      <h1 class="heading">Email settings</h1>
+
+      <p>This page will allow you to change your notification settings to control which how you receive emails relating to issues</p>
+      <br/>
+
+      <form class="form" action="" method="POST">
+      <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Notification settings</h3>
+            </div>
+
+            <div class="panel-body">
+                <div class="col-md-6">
+                        <div class="radio">
+                            <label>
+                                <input name="never" type="radio" value="false" {% if c.settings.all_publishers or not c.settings.never%}checked{% endif%}>
+                                Send me emails for all publishers
+                            </label>
+                        </div>
+                 </div>
+                <div class="col-md-6">
+                        <div class="radio">
+                            <label>
+                                <input name="never" type="radio" value="true" {% if c.settings.never %}checked{% endif%}>
+                                Never send me emails
+                            </label>
+                        </div>
+                </div>
+
+                <div class="clearfix"></div>
+                <hr/>
+               <div class="col-md-6">
+                    <label for="exclude_publishers">Exclude these publishers</label>
+                    <select id="exclude_publishers" name="exclude_publishers" class="form-control chzn-select" data-placeholder=" " multiple>
+                        {% for organization in c.organizations %}
+                            <option value="{{organization.id}}" {% if organization.id in c.exclude_publishers %}selected{% endif %}>{{organization.title}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                 <div class="col-md-6 control-group">
+                    <label for="include_publishers">Include these publishers</label>
+                    <select id="include_publishers" name="include_publishers" class="form-control chzn-select"  data-placeholder=" " multiple >
+                        {% for organization in c.organizations %}
+                            <option value="{{organization.id}}" {% if organization.id in c.include_publishers %}selected{% endif %}>{{organization.title}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="panel-footer">
+                <input type="submit" class="btn btn-primary pull-right" value="Save settings">
+                <div class="clearfix"></div>
+            </div>
+        </div>
+            </form>
+
+        <script type="text/javascript">
+            $(document).ready(function(){
+                $(".chzn-select").chosen();
+            });
+
+        </script>
+
+{% endblock %}
+

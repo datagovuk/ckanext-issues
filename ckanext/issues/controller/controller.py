@@ -22,6 +22,8 @@ from ckanext.issues.logic import schema
 from ckanext.issues.lib.helpers import (Pagination, get_issues_per_page,
                                         get_issue_subject)
 
+from ckanext.issues.model.notification import NotificationToken, NotificationSettings
+
 log = getLogger(__name__)
 
 AUTOCOMPLETE_LIMIT = 10
@@ -30,6 +32,7 @@ ISSUES_PER_PAGE = (15, 30, 50)
 
 
 class IssueController(BaseController):
+
     def _before_dataset(self, dataset_id):
         '''Returns the dataset dict and checks issues are enabled for it.'''
         self.context = {'for_view': True}
@@ -573,3 +576,28 @@ def _search_issues(dataset_id=None,
     if visibility:
         template_variables['visibility'] = visibility
     return template_variables
+
+class IssueNotificationController(BaseController):
+
+    def manage(self, code):
+        # Validate token and find user_id ...
+        valid, user_id = NotificationToken.validate_token(code)
+        if not valid:
+            abort(403)
+
+        settings = NotificationSettings.find_record(user_id)
+        if not settings:
+            NotificationSettings.create(user_id=user_id, never=True)
+
+        if request.method == 'POST':
+            # Get and validate parameters
+            # Update the user settings
+            settings = None
+            pass
+
+        context = {'model': model, 'session': model.Session}
+
+        c.settings = settings
+        c.organizations = logic.get_action('organization_list')(context, {'all_fields': True})
+        return render("issues/manage.html")
+

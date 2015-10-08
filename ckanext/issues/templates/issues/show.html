@@ -18,7 +18,7 @@
 
 {% block breadcrumb_item %}{{ h.nav_link(issue.number, named_route='issues_show', dataset_id=dataset.name, issue_number=issue.number) }}
 {% endblock %}
- 
+
 {% set can_edit_issue = h.check_access('issue_update', {'dataset_id': dataset.id, 'issue_number': issue.number }) %}
 {% set is_publisher = h.check_access('package_update', {'id': dataset.id }) %}
 {% import 'macros/form.html' as form %}
@@ -64,7 +64,7 @@
       </div>
       {% if can_edit_issue %}
         <div class="issue-comment-label">
-           Owner 
+           Owner
         </div>
         {% if comment.visibility == 'hidden' %}
           <div class="issue-comment-label">

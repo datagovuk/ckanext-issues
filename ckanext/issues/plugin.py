@@ -106,6 +106,12 @@ class IssuesPlugin(p.SingletonPlugin):
                       '/organization/:org_id/issues',
                       action='issues_for_organization')
 
+        notification_name = 'ckanext.issues.controller:IssueNotificationController'
+        with SubMapper(map, controller=notification_name) as m:
+            m.connect('issues_notifications_manage',
+                      '/issues/notifications/:code',
+                      action='manage')
+
         moderation = 'ckanext.issues.controller:ModerationController'
         with SubMapper(map, controller=moderation) as m:
             m.connect('issues_moderate_reported_issues',

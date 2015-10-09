@@ -1,6 +1,7 @@
 import collections
 from logging import getLogger
 import re
+import json
 
 from sqlalchemy import func
 from pylons.i18n import _
@@ -580,22 +581,39 @@ def _search_issues(dataset_id=None,
 class IssueNotificationController(BaseController):
 
     def manage(self, code):
+        import ckan.lib.navl.dictization_functions as df
+
         # Validate token and find user_id ...
         valid, user_id = NotificationToken.validate_token(code)
         if not valid:
             abort(403)
 
+        context = {'model': model, 'session': model.Session}
+
         settings = NotificationSettings.find_record(user_id)
         if not settings:
+            # TODO: Set defaults
             NotificationSettings.create(user_id=user_id, never=True)
 
         if request.method == 'POST':
             # Get and validate parameters
             # Update the user settings
-            settings = None
-            pass
+            data = logic.clean_dict(
+                df.unflatten(logic.tuplize_dict(logic.parse_params(request.params))))
 
-        context = {'model': model, 'session': model.Session}
+            settings = NotificationSettings.find_record(user_id)
+            if settings:
+                # Use defaults
+                settings.never = toolkit.asbool(data.get('never', False))
+                settings.include_publishers = json.dumps(data.get('include_publishers', []))
+                settings.exclude_publishers = json.dumps(data.get('exclude_publishers', []))
+                settings.all_where_editor_admin = toolkit.asbool(data.get('all_where_editor_admin', False))
+                model.Session.add(settings)
+                model.Session.commit()
+            else:
+                data['user_id'] = user_id
+                settings = NotificationSettings.create(**data)
+            print settings
 
         c.settings = settings
         c.organizations = logic.get_action('organization_list')(context, {'all_fields': True})

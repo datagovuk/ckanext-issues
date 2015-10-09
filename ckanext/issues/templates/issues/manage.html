@@ -18,45 +18,55 @@
       <form class="form" action="" method="POST">
       <div class="panel panel-default">
             <div class="panel-heading">
-                <h3 class="panel-title">Notification settings</h3>
+                <h3 class="panel-title">Settings</h3>
             </div>
 
             <div class="panel-body">
-                <div class="col-md-6">
-                        <div class="radio">
-                            <label>
-                                <input name="never" type="radio" value="false" {% if c.settings.all_publishers or not c.settings.never%}checked{% endif%}>
-                                Send me emails for all publishers
-                            </label>
-                        </div>
-                 </div>
-                <div class="col-md-6">
-                        <div class="radio">
-                            <label>
-                                <input name="never" type="radio" value="true" {% if c.settings.never %}checked{% endif%}>
-                                Never send me emails
-                            </label>
-                        </div>
+                <div class="row">
+                    <div class="col-md-6">
+                            <div class="radio">
+                                <label>
+                                    <input name="never" type="radio" value="false" {% if c.settings.all_publishers or not c.settings.never%}checked{% endif%}>
+                                    Send me emails for all publishers
+                                </label>
+                            </div>
+
+                        <label for="exclude_publishers">Except for these publishers</label>
+                        <select id="exclude_publishers" name="exclude_publishers" class="form-control chzn-select" data-placeholder=" " multiple>
+                            {% for organization in c.organizations %}
+                                <option value="{{organization.id}}" {% if organization.id in c.settings.exclude_publishers %}selected{% endif %}>{{organization.title}}</option>
+                            {% endfor %}
+                        </select>
+
+                     </div>
+
+                    <div class="col-md-6"  style="border-left: solid 2px #ddd">
+                            <div class="radio">
+                                <label>
+                                    <input name="never" type="radio" value="true" {% if c.settings.never %}checked{% endif%}>
+                                    Never send me emails
+                                </label>
+                            </div>
+
+                            <label for="include_publishers">Except for these publishers</label>
+                            <select id="include_publishers" name="include_publishers" class="form-control chzn-select"  data-placeholder=" " multiple >
+                                {% for organization in c.organizations %}
+                                    <option value="{{organization.id}}" {% if organization.id in c.settings.include_publishers %}selected{% endif %}>{{organization.title}}</option>
+                                {% endfor %}
+                            </select>
+                    </div>
+                </div>
+                <hr/>
+
+                <div class="checkbox">
+                    <label>
+                        <input name="all_where_editor_admin" type="checkbox" value="true" {% if c.settings.all_where_editor_admin %}checked{% endif%}>
+                        Only send emails for publishers where I am an editor or administrator
+                    </label>
                 </div>
 
-                <div class="clearfix"></div>
-                <hr/>
-               <div class="col-md-6">
-                    <label for="exclude_publishers">Exclude these publishers</label>
-                    <select id="exclude_publishers" name="exclude_publishers" class="form-control chzn-select" data-placeholder=" " multiple>
-                        {% for organization in c.organizations %}
-                            <option value="{{organization.id}}" {% if organization.id in c.exclude_publishers %}selected{% endif %}>{{organization.title}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                 <div class="col-md-6 control-group">
-                    <label for="include_publishers">Include these publishers</label>
-                    <select id="include_publishers" name="include_publishers" class="form-control chzn-select"  data-placeholder=" " multiple >
-                        {% for organization in c.organizations %}
-                            <option value="{{organization.id}}" {% if organization.id in c.include_publishers %}selected{% endif %}>{{organization.title}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+
+
             </div>
 
             <div class="panel-footer">

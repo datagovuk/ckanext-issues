@@ -4,15 +4,11 @@ receive notifications for a given publisher. If there is no database
 entry for the user then it is expected the caller will check against
 configuration.
 
-The settings are processed according to the following rules:
+The settings are exclusive.
 
-1. If a user chooses 'never', they will never receive an issue notification
-2. If the user chooses 'all_publishers' then they will receive a notification
-    unless that publisher is specified in 'exclude_publishers'
-3. If user explicitly includes/excludes a publisher then that value will be
-    used.
-4. Else the all_where_editor_admin property is used to determine the
-    answer.
+1. Always send me NotificationSettings
+2. Only send me notifications where I am an admin or editor
+3. Only send me notifications for the following publishers.
 
 """
 from datetime import datetime
@@ -85,7 +81,7 @@ class NotificationSettings(domain_object.DomainObject):
             .first()
 
     @classmethod
-    def add_publisher(self, user_id, publisher_id, want=False):
+    def add_publisher(self, user_id, publisher_id):
         """
         Add a publisher_id to the list of publisher_ids that this user wants
         to receive notifications from (or not).
@@ -94,11 +90,10 @@ class NotificationSettings(domain_object.DomainObject):
         if not record:
             record = NotificationSettings.create(user_id=user_id)
 
-        attr = u'include_publishers' if want else u'exclude_publishers'
-        publishers = json.loads(getattr(record, attr))
+        publishers = json.loads(record.include_publishers)
         if publisher_id not in publishers:
             publishers.append(publisher_id)
-            setattr(record, attr, json.dumps(publishers))
+            record.include_publishers = json.dumps(publishers)
             model.Session.add(record)
             model.Session.commit()
 
@@ -115,29 +110,16 @@ class NotificationSettings(domain_object.DomainObject):
         if not record:
             return False, False
 
-        # Rule 1 - If a user chooses never, they will never receive an issue
-        # notification
-        if record.never:
-            return True, False
-
         explicit_yes = json.loads(record.include_publishers)
-        explicit_no = json.loads(record.exclude_publishers)
 
         # Rule 2 - If the user chooses all_publishers then they will receive a notification
         # unless that publisher is specified in these_publishers_false
         if record.all_publishers:
-            return True, publisher_id not in explicit_no
-
-        # Rule 3 - If user explicitly includes/excludes a publisher then that value will be
-        # used.
-        if publisher_id in explicit_no:
-            return True, False
+            return True, True
 
         if publisher_id in explicit_yes:
             return True, True
 
-        # Rule 4 - Else the all_where_editor_admin property is used to determine the
-        # answer.
         if record.all_where_editor_admin:
             # See if the user_id is a member of the publisher_id specified ...
             member_count = model.Session.query(model.Member)\
@@ -179,14 +161,10 @@ def define_notification_table():
         # Does the user just want all notifications for all publishers
         Column('all_publishers', types.Boolean, default=False),
 
-        # If true, the user NEVER wants an issue notification
-        Column('never', types.Boolean, default=False),
-
-        # Both of the following fields contain a json list of publisher ids which
+        # Contains a json list of publisher ids which
         # are the publishers that the user explicitly chose to receive notifications
         # from.  _true means always, _false means never.
         Column('include_publishers', types.Unicode, default=u"[]"),
-        Column('exclude_publishers', types.Unicode, default=u"[]"),
 
         Column('created', types.DateTime, default=datetime.now,
             nullable=False)

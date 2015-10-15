@@ -51,8 +51,9 @@ class TestNotificationTokenModel(ClearOnTearDownMixin, ClearOnSetupClassMixin):
         token = NotificationToken.create(self.user['id'], created=old_date)
         code = token.code
 
-        assert NotificationToken.validate_token(self.user['id'], code) \
-            == False
+        success, user = NotificationToken.validate_token(code)
+        assert success == False
+        assert user is None
 
 
 class TestNotificationModel(ClearOnTearDownMixin, ClearOnSetupClassMixin):
@@ -78,62 +79,25 @@ class TestNotificationModel(ClearOnTearDownMixin, ClearOnSetupClassMixin):
     def test_user_no_record(self):
         assert NotificationSettings.find_record('rhubarb') == None
 
-    def test_user_requested_never(self):
-        _ = NotificationSettings.create(user_id=self.user['id'], never=True)
-        s = NotificationSettings.find_record(self.user['id'])
-        assert s.never == True
-
-        found, wants = s.does_user_want_notification(self.user['id'], self.organization['id'])
-        assert found == True
-        assert wants == False
-
     def test_user_requested_all(self):
         _ = NotificationSettings.create(user_id=self.user['id'], all_publishers=True)
         s = NotificationSettings.find_record(self.user['id'])
-        assert s.never == False
         assert s.all_publishers == True
 
         found, wants = s.does_user_want_notification(self.user['id'], self.organization['id'])
         assert found == True
         assert wants == True
 
-    def test_user_requested_all_with_exclusion(self):
-        # User requested all publisher with a specific exclusion
-        s = NotificationSettings.create(user_id=self.user['id'],
-                                                         all_publishers=True,
-                                                         exclude_publishers=[self.organization['id']]
-                                                         )
-        assert s.never == False
-        assert s.all_publishers == True
-        assert len(json.loads(s.exclude_publishers)) == 1
-
-        found, wants = s.does_user_want_notification(self.user['id'], self.organization['id'])
-        assert found == True
-        assert wants == False
-
     def test_includes(self):
         s = NotificationSettings.create(user_id=self.user['id'],
                                                          include_publishers=[self.organization['id']]
                                                          )
-        assert s.never == False
         assert s.all_publishers == False
         assert len(json.loads(s.include_publishers)) == 1
 
         found, wants = s.does_user_want_notification(self.user['id'], self.organization['id'])
         assert found == True
         assert wants == True
-
-    def test_excludes(self):
-        s = NotificationSettings.create(user_id=self.user['id'],
-                                                         exclude_publishers=[self.organization['id']]
-                                                         )
-        assert s.never == False
-        assert s.all_publishers == False
-        assert len(json.loads(s.exclude_publishers)) == 1
-
-        found, wants = s.does_user_want_notification(self.user['id'], self.organization['id'])
-        assert found == True
-        assert wants == False
 
     def test_where_admin(self):
         local_organization = factories.Organization(

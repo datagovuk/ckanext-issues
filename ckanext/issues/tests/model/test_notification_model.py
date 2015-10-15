@@ -55,7 +55,6 @@ class TestNotificationTokenModel(ClearOnTearDownMixin, ClearOnSetupClassMixin):
         assert success == False
         assert user is None
 
-
 class TestNotificationModel(ClearOnTearDownMixin, ClearOnSetupClassMixin):
 
     def setup(self):

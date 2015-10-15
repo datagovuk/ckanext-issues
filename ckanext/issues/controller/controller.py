@@ -601,21 +601,28 @@ class IssueNotificationController(BaseController):
             data = logic.clean_dict(
                 df.unflatten(logic.tuplize_dict(logic.parse_params(request.params))))
 
+            key = data['settings']
+
             settings = NotificationSettings.find_record(user_id)
             if settings:
-                # Use defaults
-                settings.never = toolkit.asbool(data.get('never', False))
-                settings.include_publishers = json.dumps(data.get('include_publishers', []))
-                settings.exclude_publishers = json.dumps(data.get('exclude_publishers', []))
-                settings.all_where_editor_admin = toolkit.asbool(data.get('all_where_editor_admin', False))
-                model.Session.add(settings)
-                model.Session.commit()
+                settings.all_publishers = False
+                settings.all_where_editor_admin = False
             else:
-                data['user_id'] = user_id
-                settings = NotificationSettings.create(**data)
-            print settings
+                settings = NotificationSettings.create(user_id=user_id)
+
+            if key == 'all':
+                settings.all_publishers = True
+            elif key == 'just':
+                settings.include_publishers = json.dumps(data.get('include_publishers', []))
+            elif key == 'all_admin':
+                settings.all_where_editor_admin = True
+            model.Session.add(settings)
+            model.Session.commit()
+
+            h.flash_success(_('Your settings have been updated'))
+
 
         c.settings = settings
         c.organizations = logic.get_action('organization_list')(context, {'all_fields': True})
-        return render("issues/manage.html")
+        return render("issues/notifications.html")
 

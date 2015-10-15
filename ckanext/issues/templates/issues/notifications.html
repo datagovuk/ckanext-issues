@@ -1,0 +1,77 @@
+{% extends "issues/base.html" %}
+
+{% block subtitle %}{{ _("Manage notifications") }}{% endblock %}
+
+{% block maintag %}<div class="row" role="main">{% endblock %}
+
+{% block breadcrumb_content %}
+  <li><a href="/data/search">Datasets</a></li>
+  <li class="active">Issue Notification Settings</li>
+{% endblock %}
+
+{% block primary_content %}
+      <h1 class="heading">Email settings</h1>
+
+      <p>This page will allow you to change your notification settings to control which how you receive emails relating to issues</p>
+      <br/>
+
+      <form class="form" action="" method="POST">
+      <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Settings</h3>
+            </div>
+
+            <div class="panel-body">
+                <div class="form-group">
+                    <div class="radio">
+                        <label>
+                            <input name="settings" type="radio" value="all"  {% if c.settings.all_publishers %}checked{% endif%}>
+                            Send me emails for all publishers
+                        </label>
+                    </div>
+                </div>
+
+                <hr/>
+
+
+                <div class="form-group">
+                    <div class="radio">
+                        <label>
+                            <input name="settings" type="radio" value="all_admin" {% if c.settings.all_where_editor_admin%}checked{% endif%}>
+                            Send me emails for all publishers where I am an administrator or editor.
+                        </label>
+                    </div>
+                </div>
+
+                <hr/>
+
+                <div class="form-group">
+
+                    <div class="radio">
+                            <label for="include_publishers">Send me emails only for these publishers
+                                    <input name="settings" type="radio" value="just" {% if not c.settings.all_where_editor_admin and not c.settings.all_publishers %}checked{% endif%}>
+                            </label>
+
+
+                            <select id="include_publishers" name="include_publishers" class="form-control chzn-select"  data-placeholder=" " multiple >
+                                {% for organization in c.organizations %}
+                                    <option value="{{organization.id}}" {% if organization.id in c.settings.include_publishers %}selected{% endif %}>{{organization.title}}</option>
+                                {% endfor %}
+                            </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-footer">
+                <input type="submit" class="btn btn-primary pull-right" value="Save settings">
+                <div class="clearfix"></div>
+            </div>
+        </div>
+            </form>
+
+        <script type="text/javascript">
+                $(".chzn-select").chosen();
+        </script>
+
+{% endblock %}
+

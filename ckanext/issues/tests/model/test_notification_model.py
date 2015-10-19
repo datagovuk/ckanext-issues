@@ -83,8 +83,7 @@ class TestNotificationModel(ClearOnTearDownMixin, ClearOnSetupClassMixin):
         s = NotificationSettings.find_record(self.user['id'])
         assert s.all_publishers == True
 
-        found, wants = s.does_user_want_notification(self.user['id'], self.organization['id'])
-        assert found == True
+        wants = s.does_user_want_notification(self.user['id'], self.organization['id'])
         assert wants == True
 
     def test_includes(self):
@@ -94,8 +93,7 @@ class TestNotificationModel(ClearOnTearDownMixin, ClearOnSetupClassMixin):
         assert s.all_publishers == False
         assert len(json.loads(s.include_publishers)) == 1
 
-        found, wants = s.does_user_want_notification(self.user['id'], self.organization['id'])
-        assert found == True
+        wants = s.does_user_want_notification(self.user['id'], self.organization['id'])
         assert wants == True
 
     def test_where_admin(self):
@@ -105,9 +103,8 @@ class TestNotificationModel(ClearOnTearDownMixin, ClearOnSetupClassMixin):
 
         s = NotificationSettings.create(user_id=self.user['id'],
                                                         all_where_editor_admin=True)
-        found, wants = s.does_user_want_notification(self.user['id'],
+        wants = s.does_user_want_notification(self.user['id'],
                                                                                   local_organization['id'])
-        #assert found == True
         assert wants == True
 
     def test_no_record(self):

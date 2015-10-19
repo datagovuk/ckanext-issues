@@ -97,7 +97,7 @@ class NotificationSettings(domain_object.DomainObject):
             model.Session.add(record)
             model.Session.commit()
 
-
+    @classmethod
     def does_user_want_notification(self,  user_id, publisher_id):
         """
         Checks if any of the user's settings specify that they are not
@@ -108,17 +108,17 @@ class NotificationSettings(domain_object.DomainObject):
         """
         record = self.find_record(user_id)
         if not record:
-            return False, False
+            # Setup default record for this user ...
+            record = NotificationSettings.create(user_id=user_id,
+                                                                     all_where_editor_admin=True)
 
         explicit_yes = json.loads(record.include_publishers)
 
-        # Rule 2 - If the user chooses all_publishers then they will receive a notification
-        # unless that publisher is specified in these_publishers_false
         if record.all_publishers:
-            return True, True
+            return True
 
         if publisher_id in explicit_yes:
-            return True, True
+            return True
 
         if record.all_where_editor_admin:
             # See if the user_id is a member of the publisher_id specified ...
@@ -126,9 +126,9 @@ class NotificationSettings(domain_object.DomainObject):
                 .filter(model.Member.table_id == user_id)\
                 .filter(model.Member.group_id == publisher_id)\
                 .filter(model.Member.state == 'active').count()
-            return True, member_count == 1
+            return member_count == 1
 
-        return False, False
+        return False
 
 def define_notification_token_table():
     table = Table(

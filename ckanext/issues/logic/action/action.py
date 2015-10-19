@@ -105,8 +105,31 @@ def _get_next_issue_number(session, dataset_id):
 
 
 def _get_recipients(context, dataset):
-    organization = dataset.owner_org
+    from ckanext.issues.model.notification import NotificationSettings
+
+    if isinstance(dataset, dict):
+        organization = dataset['owner_org']
+    else:
+        organization = dataset.owner_org
+
     if organization:
+        emails = []
+
+        # Find all users who want every notification and add them
+        settings = model.Session.query(NotificationSettings)\
+            .filter(NotificationSettings.all_publishers==True).all()
+        for setting in settings:
+            user_emails = model.Session.query(model.User.id)\
+                .filter(model.User.id.in_([s.user_id for s in settings])).all()
+            emails.extend([u[0] for u in user_emails])
+
+        settings = model.Session.query(NotificationSettings)\
+            .filter(NotificationSettings.include_publishers.like('%"{org}"%'.format(org=organization))).all()
+        for setting in settings:
+            user_emails = model.Session.query(model.User.id)\
+                .filter(model.User.id.in_([s.user_id for s in settings])).all()
+            emails.extend([u[0] for u in user_emails])
+
         roles = authz.get_roles_with_permission('update_dataset')
         recipients = []
         for role in roles:
@@ -118,9 +141,15 @@ def _get_recipients(context, dataset):
                     'capacity': role,
                 }
             )
-        return [recipient[0] for recipient in recipients]
-    else:
-        return []
+
+        for recipient in recipients:
+            if NotificationSettings.does_user_want_notification(recipient[0], organization):
+                if not recipient[0] in emails:
+                    emails.append(recipient[0])
+
+        return emails
+
+    return []
 
 def _get_issue_vars(issue, issue_subject, user_obj):
     try:

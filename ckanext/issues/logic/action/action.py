@@ -167,10 +167,16 @@ def _get_issue_vars(issue, issue_subject, user_obj):
             'h': h}
 
 
+def _get_notification_settings_token(user_obj):
+    from ckanext.issues.model.nofitication import NotificationToken
+    token = NotificationToken.create(user_obj.id)
+    return token.code
+
 def _get_issue_email_body(issue, issue_subject, user_obj):
     extra_vars = _get_issue_vars(issue, issue_subject, user_obj)
     # Would use p.toolkit.render, but it mucks with response and other things,
     # which is unnecessary, and p.toolkit.render_text uses genshi...
+    extra_vars['settings_token'] = _get_notification_settings_token(user_obj)
     return render_jinja2('issues/email/new_issue.html', extra_vars=extra_vars)
 
 
@@ -178,6 +184,7 @@ def _get_comment_email_body(comment, issue_subject, user_obj):
     extra_vars = _get_issue_vars(comment.issue, issue_subject, user_obj)
     # The template has to be .html (even though it is .txt) so that
     # it is rendered with jinja
+    extra_vars['settings_token'] = _get_notification_settings_token(user_obj)
     return p.toolkit.render('issues/email/new_comment.html',
                             extra_vars=extra_vars)
 

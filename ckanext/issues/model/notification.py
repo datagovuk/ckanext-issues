@@ -40,6 +40,10 @@ class NotificationToken(domain_object.DomainObject):
         model.Session.commit()
         return token
 
+    def find(self, user_id):
+        return model.Session.query(NotificationToken)\
+            .filter(NotificationToken.user_id == user_id).first()
+
     @classmethod
     def validate_token(self, code):
         token = model.Session.query(NotificationToken)\

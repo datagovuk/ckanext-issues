@@ -1,14 +1,14 @@
 """
 For a given user, this table model defines whether the user wishes to
-receive notifications for a given publisher. If there is no database
+be automatically following notifications. If there is no database
 entry for the user then it is expected the caller will check against
-configuration.
+configuration for a default.
 
 The settings are exclusive.
 
-1. Always send me NotificationSettings
-2. Only send me notifications where I am an admin or editor
-3. Only send me notifications for the following publishers.
+1. Always auto-follow
+2. Only auto-follow if I am a member of the publisher
+3. Only auto-follow for the following publishers.
 
 """
 from datetime import datetime
@@ -176,3 +176,5 @@ def define_notification_table():
 
     meta.mapper( NotificationSettings, table, properties={})
     return table
+
+

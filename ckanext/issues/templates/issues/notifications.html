@@ -10,46 +10,45 @@
 {% endblock %}
 
 {% block primary_content %}
-      <h1 class="heading">Email settings</h1>
+      <h1 class="heading">Issue settings</h1>
 
-      <p>Change your notification settings to control when you receive emails relating to issues</p>
+      <p>This page allows you to set your auto-follow settings, and to un-follow specific publishers.</p>
+
+      <p>When you report a new issue, or comment on an issue, these settings will decide whether you
+      will automatically follow the issue and receive updates.</p>
 
       <br/>
 
       <form class="form" action="" method="POST">
       <div class="panel panel-default">
             <div class="panel-heading">
-                <h3 class="panel-title">Settings</h3>
+                <h3 class="panel-title">Auto-follow</h3>
             </div>
 
             <div class="panel-body">
-                <div class="form-group">
+
+                <div class="form-group col-md-4">
                     <div class="radio">
                         <label>
                             <input name="settings" type="radio" value="all"  {% if c.settings.all_publishers %}checked{% endif%}>
-                            Send me emails for all publishers
+                            Auto-follow issues for all publishers
                         </label>
                     </div>
                 </div>
 
-                <hr/>
-
-
-                <div class="form-group">
+                <div class="form-group  col-md-4">
                     <div class="radio">
                         <label>
                             <input name="settings" type="radio" value="all_admin" {% if c.settings.all_where_editor_admin%}checked{% endif%}>
-                            Send me emails for all publishers where I am an administrator or editor.
+                            Auto-follow issues where I am an administrator or editor.
                         </label>
                     </div>
                 </div>
 
-                <hr/>
-
-                <div class="form-group">
+                <div class="form-group col-md-4">
 
                     <div class="radio">
-                            <label for="include_publishers">Send me emails only for these publishers
+                            <label for="include_publishers">Auto-follow issues for only these publishers
                                     <input name="settings" type="radio" value="just" {% if not c.settings.all_where_editor_admin and not c.settings.all_publishers %}checked{% endif%}>
                             </label>
 
@@ -70,6 +69,30 @@
         </div>
             </form>
 
+
+      <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Currently auto-following issues for:</h3>
+            </div>
+
+            <div class="panel-body">
+                {% for publisher in c.following%}
+                    <div class="col-md-6" style="padding: 8px; border-left: solid 2px #8DC55E; ">
+                        <div class="col-md-8">
+                            <strong style="font-size: 1.5em;">{{ publisher.title }}</strong>
+                        </div>
+                        <div class="col-md-4">
+                             {{ h.publisher_follow_button(publisher.id) }}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="panel-footer">
+                <input type="submit" class="btn btn-primary pull-right" value="Save settings">
+                <div class="clearfix"></div>
+            </div>
+        </div>
         <script type="text/javascript">
                 $(".chzn-select").chosen();
         </script>

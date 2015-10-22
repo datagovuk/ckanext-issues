@@ -621,6 +621,7 @@ class IssueNotificationController(BaseController):
 
             h.flash_success(_('Your settings have been updated'))
 
+        c.following = logic.get_action('group_followee_list')(context, {'id': c.user})
 
         c.settings = settings
         c.organizations = logic.get_action('organization_list')(context, {'all_fields': True})

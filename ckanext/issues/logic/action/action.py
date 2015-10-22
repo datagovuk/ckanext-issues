@@ -168,7 +168,7 @@ def _get_issue_vars(issue, issue_subject, user_obj):
 
 
 def _get_notification_settings_token(user_obj):
-    from ckanext.issues.model.nofitication import NotificationToken
+    from ckanext.issues.model.notification import NotificationToken
     token = NotificationToken.create(user_obj.id)
     return token.code
 
@@ -790,3 +790,4 @@ def issue_comment_search(context, data_dict):
         comments.append(comment_dict)
 
     return comments
+
